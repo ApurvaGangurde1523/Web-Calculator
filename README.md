@@ -1,4 +1,3 @@
-# Web-Calculator
 # Web Calculator
 This project implements a fully functional, modern and visually refined calculator interface built using HTML, CSS, and JavaScript. It is a professional, feature-rich calculator with scientific functions, bracket support, and calculation history.🧮
 By integrating structured HTML, styled CSS components, and event-driven JavaScript, the calculator ensures accurate results, real-time display updates, and a consistent user experience
