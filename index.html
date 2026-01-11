@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Calculator Pro</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            padding: 20px;
+            position: relative;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            top: -200px;
+            right: -100px;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            bottom: -150px;
+            left: -100px;
+            animation: float 12s infinite ease-in-out reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(5deg); }
+        }
+
+        .calculator-container {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
+            max-width: 450px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            animation: slideUp 0.6s ease-out;
+            margin: 20px auto;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .calculator-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .calculator-header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            margin-bottom: 0;
+        }
+
+        .calculator-header p {
+            display: none;
+        }
+
+        .mode-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: #f3f4f6;
+            padding: 5px;
+            border-radius: 15px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: transparent;
+            color: #6b7280;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .display {
+            background: linear-gradient(135deg, #1f2937, #111827);
+            border-radius: 20px;
+            padding: 25px 20px;
+            margin-bottom: 25px;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .display::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.1); opacity: 0.6; }
+        }
+
+        .expression {
+            font-size: 1.1rem;
+            color: #9ca3af;
+            min-height: 28px;
+            text-align: right;
+            word-wrap: break-word;
+            word-break: break-all;
+            margin-bottom: 8px;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        .current-value {
+            font-size: 2.8rem;
+            color: white;
+            font-weight: 700;
+            text-align: right;
+            word-wrap: break-word;
+            word-break: break-all;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            position: relative;
+            z-index: 1;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .scientific-buttons {
+            display: none;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .scientific-buttons.active {
+            display: grid;
+        }
+
+        button {
+            padding: 20px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+
+        button:active::before {
+            width: 200px;
+            height: 200px;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .btn-number {
+            background: white;
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .btn-number:hover {
+            background: #f9fafb;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-operator {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-size: 1.4rem;
+        }
+
+        .btn-operator:hover {
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-operator.active {
+            background: linear-gradient(135deg, #4c51bf, #5a32a3);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.7);
+        }
+
+        .btn-function {
+            background: #f3f4f6;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .btn-function:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+
+        .btn-scientific {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            font-size: 1rem;
+            padding: 15px;
+        }
+
+        .btn-scientific:hover {
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-equals {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            grid-column: span 2;
+            font-size: 1.5rem;
+        }
+
+        .btn-equals:hover {
+            box-shadow: 0 12px 30px rgba(245, 158, 11, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-zero {
+            grid-column: span 2;
+        }
+
+        .btn-bracket {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            font-size: 1.3rem;
+        }
+
+        .btn-bracket:hover {
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .history-panel {
+            margin-top: 25px;
+            background: #f9fafb;
+            border-radius: 20px;
+            padding: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .history-title {
+            font-size: 1rem;
+            color: #374151;
+            font-weight: 700;
+        }
+
+        .clear-history {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .clear-history:hover {
+            background: #dc2626;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .history-item {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-expression {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .history-result {
+            font-size: 1.1rem;
+            color: #1f2937;
+            font-weight: 700;
+        }
+
+        .empty-history {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.9rem;
+            padding: 30px 0;
+        }
+
+        .error {
+            animation: shake 0.5s;
+            background: #fee2e2 !important;
+            color: #dc2626 !important;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* Custom scrollbar */
+        .history-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .history-panel::-webkit-scrollbar-track {
+            background: #e5e7eb;
+            border-radius: 10px;
+        }
+
+        .history-panel::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+
+        @media (max-width: 480px) {
+            .calculator-container {
+                padding: 20px;
+            }
+
+            button {
+                padding: 16px;
+                font-size: 1.1rem;
+            }
+
+            .current-value {
+                font-size: 2.2rem;
+            }
+
+            .calculator-header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator-header">
+            <h1>Calculator</h1>
+        </div>
+
+        <div class="mode-toggle">
+            <button class="mode-btn active" data-mode="basic">Basic</button>
+            <button class="mode-btn" data-mode="scientific">Scientific</button>
+        </div>
+
+        <div class="display">
+            <div class="expression" id="expression"></div>
+            <div class="current-value" id="currentValue">0</div>
+        </div>
+
+        <div class="scientific-buttons" id="scientificButtons">
+            <button class="btn-scientific" data-function="sin">sin</button>
+            <button class="btn-scientific" data-function="cos">cos</button>
+            <button class="btn-scientific" data-function="tan">tan</button>
+            <button class="btn-scientific" data-function="log">log</button>
+            
+            <button class="btn-scientific" data-function="sqrt">√</button>
+            <button class="btn-scientific" data-function="pow">x²</button>
+            <button class="btn-scientific" data-function="exp">eˣ</button>
+            <button class="btn-scientific" data-function="ln">ln</button>
+            
+            <button class="btn-scientific" data-function="pi">π</button>
+            <button class="btn-scientific" data-function="e">e</button>
+            <button class="btn-scientific" data-function="abs">|x|</button>
+            <button class="btn-scientific" data-function="fact">x!</button>
+        </div>
+
+        <div class="buttons">
+            <button class="btn-function" data-action="clear">AC</button>
+            <button class="btn-bracket" data-bracket="(">(</button>
+            <button class="btn-bracket" data-bracket=")">)</button>
+            <button class="btn-operator" data-operator="/">÷</button>
+
+            <button class="btn-number" data-number="7">7</button>
+            <button class="btn-number" data-number="8">8</button>
+            <button class="btn-number" data-number="9">9</button>
+            <button class="btn-operator" data-operator="*">×</button>
+
+            <button class="btn-number" data-number="4">4</button>
+            <button class="btn-number" data-number="5">5</button>
+            <button class="btn-number" data-number="6">6</button>
+            <button class="btn-operator" data-operator="-">−</button>
+
+            <button class="btn-number" data-number="1">1</button>
+            <button class="btn-number" data-number="2">2</button>
+            <button class="btn-number" data-number="3">3</button>
+            <button class="btn-operator" data-operator="+">+</button>
+
+            <button class="btn-number btn-zero" data-number="0">0</button>
+            <button class="btn-number" data-number=".">.</button>
+            <button class="btn-equals" data-action="equals">=</button>
+        </div>
+
+        <div class="history-panel">
+            <div class="history-header">
+                <span class="history-title"> History</span>
+                <button class="clear-history" id="clearHistory">Clear All</button>
+            </div>
+            <div id="historyList">
+                <div class="empty-history">No calculations yet</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AdvancedCalculator {
+            constructor() {
+                this.currentValue = '0';
+                this.expression = '';
+                this.history = [];
+                this.lastResult = null;
+                this.isScientificMode = false;
+                
+                this.currentDisplay = document.getElementById('currentValue');
+                this.expressionDisplay = document.getElementById('expression');
+                this.historyList = document.getElementById('historyList');
+                
+                this.initializeEventListeners();
+                this.loadHistory();
+            }
+
+            initializeEventListeners() {
+                // Mode toggle
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        const mode = e.target.dataset.mode;
+                        this.isScientificMode = mode === 'scientific';
+                        const scientificBtns = document.getElementById('scientificButtons');
+                        if (this.isScientificMode) {
+                            scientificBtns.classList.add('active');
+                        } else {
+                            scientificBtns.classList.remove('active');
+                        }
+                    });
+                });
+
+                // Numbers
+                document.querySelectorAll('[data-number]').forEach(btn => {
+                    btn.addEventListener('click', () => this.appendNumber(btn.dataset.number));
+                });
+
+                // Operators
+                document.querySelectorAll('[data-operator]').forEach(btn => {
+                    btn.addEventListener('click', () => this.appendOperator(btn.dataset.operator));
+                });
+
+                // Brackets
+                document.querySelectorAll('[data-bracket]').forEach(btn => {
+                    btn.addEventListener('click', () => this.appendBracket(btn.dataset.bracket));
+                });
+
+                // Scientific functions
+                document.querySelectorAll('[data-function]').forEach(btn => {
+                    btn.addEventListener('click', () => this.applyFunction(btn.dataset.function));
+                });
+
+                // Actions
+                document.querySelector('[data-action="clear"]').addEventListener('click', () => this.clear());
+                document.querySelector('[data-action="equals"]').addEventListener('click', () => this.calculate());
+
+                // History
+                document.getElementById('clearHistory').addEventListener('click', () => this.clearHistory());
+
+                // Keyboard support
+                document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+            }
+
+            appendNumber(number) {
+                if (this.currentValue === '0' && number !== '.') {
+                    this.currentValue = number;
+                } else if (number === '.' && this.currentValue.includes('.')) {
+                    return;
+                } else {
+                    this.currentValue += number;
+                }
+                this.updateDisplay();
+            }
+
+            appendOperator(operator) {
+                if (this.currentValue !== '') {
+                    if (this.expression !== '' && !this.expression.endsWith('(')) {
+                        this.expression += ' ' + this.currentValue;
+                    } else {
+                        this.expression += this.currentValue;
+                    }
+                    this.expression += ' ' + operator + ' ';
+                    this.currentValue = '';
+                }
+                this.updateDisplay();
+            }
+
+            appendBracket(bracket) {
+                if (bracket === '(') {
+                    if (this.expression === '' || this.expression.endsWith(' ')) {
+                        this.expression += bracket;
+                    } else {
+                        this.expression += ' * ' + bracket;
+                    }
+                } else {
+                    if (this.currentValue !== '') {
+                        this.expression += this.currentValue;
+                        this.currentValue = '';
+                    }
+                    this.expression += bracket;
+                }
+                this.updateDisplay();
+            }
+
+            applyFunction(func) {
+                let value = parseFloat(this.currentValue) || 0;
+                let result;
+
+                try {
+                    switch(func) {
+                        case 'sin':
+                            result = Math.sin(value * Math.PI / 180);
+                            break;
+                        case 'cos':
+                            result = Math.cos(value * Math.PI / 180);
+                            break;
+                        case 'tan':
+                            result = Math.tan(value * Math.PI / 180);
+                            break;
+                        case 'log':
+                            result = Math.log10(value);
+                            break;
+                        case 'ln':
+                            result = Math.log(value);
+                            break;
+                        case 'sqrt':
+                            result = Math.sqrt(value);
+                            break;
+                        case 'pow':
+                            result = Math.pow(value, 2);
+                            break;
+                        case 'exp':
+                            result = Math.exp(value);
+                            break;
+                        case 'pi':
+                            result = Math.PI;
+                            break;
+                        case 'e':
+                            result = Math.E;
+                            break;
+                        case 'abs':
+                            result = Math.abs(value);
+                            break;
+                        case 'fact':
+                            result = this.factorial(Math.floor(value));
+                            break;
+                        default:
+                            return;
+                    }
+
+                    this.currentValue = this.formatResult(result);
+                    this.updateDisplay();
+                } catch (error) {
+                    this.showError();
+                }
+            }
+
+            factorial(n) {
+                if (n < 0) throw new Error('Invalid input');
+                if (n === 0 || n === 1) return 1;
+                let result = 1;
+                for (let i = 2; i <= n; i++) {
+                    result *= i;
+                }
+                return result;
+            }
+
+            calculate() {
+                try {
+                    let fullExpression = this.expression + this.currentValue;
+                    if (fullExpression === '' || fullExpression === '0') return;
+
+                    // Replace operators for evaluation
+                    let evalExpression = fullExpression
+                        .replace(/×/g, '*')
+                        .replace(/÷/g, '/')
+                        .replace(/−/g, '-');
+
+                    // Evaluate
+                    const result = eval(evalExpression);
+
+                    if (!isFinite(result)) {
+                        throw new Error('Invalid calculation');
+                    }
+
+                    // Add to history
+                    this.addToHistory(fullExpression, result);
+
+                    // Update display
+                    this.expression = '';
+                    this.currentValue = this.formatResult(result);
+                    this.lastResult = result;
+                    this.updateDisplay();
+
+                } catch (error) {
+                    this.showError();
+                }
+            }
+
+            formatResult(number) {
+                if (Number.isInteger(number)) {
+                    return number.toString();
+                }
+                return parseFloat(number.toFixed(10)).toString();
+            }
+
+            clear() {
+                this.currentValue = '0';
+                this.expression = '';
+                this.updateDisplay();
+            }
+
+            showError() {
+                this.currentDisplay.classList.add('error');
+                this.currentValue = 'Error';
+                this.updateDisplay();
+                
+                setTimeout(() => {
+                    this.currentDisplay.classList.remove('error');
+                    this.clear();
+                }, 1500);
+            }
+
+            updateDisplay() {
+                this.currentDisplay.textContent = this.currentValue || '0';
+                this.expressionDisplay.textContent = this.expression || '';
+            }
+
+            addToHistory(expression, result) {
+                const historyItem = {
+                    expression: expression,
+                    result: result,
+                    timestamp: new Date().toLocaleTimeString()
+                };
+
+                this.history.unshift(historyItem);
+                if (this.history.length > 50) {
+                    this.history.pop();
+                }
+
+                this.saveHistory();
+                this.renderHistory();
+            }
+
+            renderHistory() {
+                if (this.history.length === 0) {
+                    this.historyList.innerHTML = '<div class="empty-history">No calculations yet</div>';
+                    return;
+                }
+
+                this.historyList.innerHTML = this.history.map(item => `
+                    <div class="history-item" onclick="calculator.useHistoryItem('${item.result}')">
+                        <div class="history-expression">${item.expression}</div>
+                        <div class="history-result">= ${this.formatResult(item.result)}</div>
+                    </div>
+                `).join('');
+            }
+
+            useHistoryItem(result) {
+                this.currentValue = result;
+                this.expression = '';
+                this.updateDisplay();
+            }
+
+            clearHistory() {
+                if (confirm('Clear all history?')) {
+                    this.history = [];
+                    this.saveHistory();
+                    this.renderHistory();
+                }
+            }
+
+            saveHistory() {
+                try {
+                    localStorage.setItem('calculatorHistory', JSON.stringify(this.history));
+                } catch (e) {
+                    console.log('Could not save history');
+                }
+            }
+
+            loadHistory() {
+                try {
+                    const saved = localStorage.getItem('calculatorHistory');
+                    if (saved) {
+                        this.history = JSON.parse(saved);
+                        this.renderHistory();
+                    }
+                } catch (e) {
+                    console.log('Could not load history');
+                }
+            }
+
+            handleKeyboard(e) {
+                if (e.key >= '0' && e.key <= '9') {
+                    this.appendNumber(e.key);
+                } else if (e.key === '.') {
+                    this.appendNumber('.');
+                } else if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/') {
+                    this.appendOperator(e.key);
+                } else if (e.key === 'Enter' || e.key === '=') {
+                    e.preventDefault();
+                    this.calculate();
+                } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
+                    this.clear();
+                } else if (e.key === '(' || e.key === ')') {
+                    this.appendBracket(e.key);
+                } else if (e.key === 'Backspace') {
+                    if (this.currentValue.length > 1) {
+                        this.currentValue = this.currentValue.slice(0, -1);
+                    } else {
+                        this.currentValue = '0';
+                    }
+                    this.updateDisplay();
+                }
+            }
+        }
+
+        // Initialize calculator
+        const calculator = new AdvancedCalculator();
+    </script>
+</body>
+</html>
